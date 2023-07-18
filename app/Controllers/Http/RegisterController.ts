@@ -23,6 +23,6 @@ export default class RegisterController {
 
         await new VerifyEmail(user).sendLater();
 
-        response.ok(user);
+        response.created(user);
     }
 }
