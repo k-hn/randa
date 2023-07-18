@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [14.x, 18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     
     # Service containers to run with `container-job`
@@ -55,3 +55,14 @@ jobs:
         NODE_ENV: test
         APP_KEY: e6bPcarVjfdo4FDVE7eIpJ0yJm8sFX3h
         DRIVE_DISK: local
+        DB_CONNECTION: pg
+        PG_HOST: localhost
+        PG_PORT: 5432
+        PG_USER: postgres
+        PG_PASSWORD: postgres
+        PG_DB_NAME: randa
+        SMTP_HOST: localhost
+        SMTP_PORT: 587
+        SMTP_USERNAME: <username>
+        SMTP_PASSWORD: <password>
+        FE_URL: sample-frontend.com
