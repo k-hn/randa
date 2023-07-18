@@ -10,9 +10,6 @@ export default class EmailVerificationToken extends BaseModel {
   public userId: number
 
   @column()
-  public email: string
-
-  @column()
   public token: string
 
   @column()

@@ -34,8 +34,8 @@ export default class User extends BaseModel {
   }
 
   // Relationships
-  @hasMany(() => EmailVerificationToken)
-  public emailVerificationTokens: HasMany<typeof EmailVerificationToken>
+  @hasOne(() => EmailVerificationToken)
+  public emailVerificationToken: HasOne<typeof EmailVerificationToken>
 
   @hasOne(() => PasswordResetToken)
   public passwordResetToken: HasOne<typeof PasswordResetToken>
