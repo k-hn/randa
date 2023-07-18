@@ -55,3 +55,9 @@ jobs:
         NODE_ENV: test
         APP_KEY: e6bPcarVjfdo4FDVE7eIpJ0yJm8sFX3h
         DRIVE_DISK: local
+        DB_CONNECTION: pg
+        PG_HOST: localhost
+        PG_PORT: 5432
+        PG_USER: postgres
+        PG_PASSWORD: postgres
+        PG_DB_NAME: randa
