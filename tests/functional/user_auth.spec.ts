@@ -118,3 +118,51 @@ test.group('User auth: forgot password', (group) => {
     Mail.restore();
   });
 })
+
+test.group('User auth: resend forgot password', (group) => {
+  group.each.setup(async () => {
+    await Database.beginGlobalTransaction();
+    return () => Database.rollbackGlobalTransaction();
+  });
+
+  test("resend forgot password request succeeds for valid email", async ({ assert, client }) => {
+    const mailer = Mail.fake();
+    const user = await UserFactory
+      .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+      .with("passwordResetToken")
+      .create();
+    const payload = {
+      email: user.email
+    };
+
+    const response = await client
+      .post("/api/v1/resend-forgot-password")
+      .json(payload);
+
+    console.log(response.body())
+    response.assertStatus(204);
+    assert.isTrue(mailer.exists((mail) => {
+      return mail.subject === "Reset password"
+    }));
+
+    Mail.restore();
+  });
+
+  test("resend forgot password request fails for invalid email", async ({ assert, client }) => {
+    const mailer = Mail.fake();
+    await UserFactory
+      .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+      .create();
+
+    const response = await client
+      .post("/api/v1/forgot-password")
+      .json({ email: "random@mail.com" });
+
+    response.assertStatus(404);
+    assert.isFalse(mailer.exists((mail) => {
+      return mail.subject === "Reset password"
+    }));
+
+    Mail.restore();
+  });
+})
