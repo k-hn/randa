@@ -29,7 +29,8 @@ Route.group(() => {
     Route.get("/verify/:token", "RegisterController.verify").as("verify");
     Route.post("/resend-verification", "RegisterController.resendVerification").as("resendVerification");
 
-    // User login routes
+    // User auth routes
     Route.post("/login", "LoginController.index").as("login");
+    Route.get("/logout", "LoginController.logout").as("logout")
   }).prefix("/v1").as("v1");
 }).prefix("/api").as("api");
