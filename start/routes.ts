@@ -32,5 +32,6 @@ Route.group(() => {
     // User auth routes
     Route.post("/login", "AuthController.login").as("login");
     Route.get("/logout", "AuthController.logout").as("logout")
+    Route.post("/forgot-password", "AuthController.forgotPassword").as("forgotPassword");
   }).prefix("/v1").as("v1");
 }).prefix("/api").as("api");

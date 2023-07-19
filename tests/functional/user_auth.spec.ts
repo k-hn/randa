@@ -1,3 +1,4 @@
+import Mail from '@ioc:Adonis/Addons/Mail';
 import Database from '@ioc:Adonis/Lucid/Database';
 import { test } from '@japa/runner'
 import UserFactory from 'Database/factories/UserFactory';
@@ -70,4 +71,50 @@ test.group('User auth: logout', (group) => {
 
     response.assertStatus(204);
   })
+})
+
+test.group('User auth: forgot password', (group) => {
+  group.each.setup(async () => {
+    await Database.beginGlobalTransaction();
+    return () => Database.rollbackGlobalTransaction();
+  });
+
+  test("forgot password request succeeds for valid email", async ({ assert, client }) => {
+    const mailer = Mail.fake();
+    const user = await UserFactory
+      .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+      .create();
+    const payload = {
+      email: user.email
+    };
+
+    const response = await client
+      .post("/api/v1/forgot-password")
+      .json(payload);
+
+    response.assertStatus(204);
+    assert.isTrue(mailer.exists((mail) => {
+      return mail.subject === "Reset password"
+    }));
+
+    Mail.restore();
+  });
+
+  test("forgot password request fails for invalid email", async ({ assert, client }) => {
+    const mailer = Mail.fake();
+    await UserFactory
+      .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+      .create();
+
+    const response = await client
+      .post("/api/v1/forgot-password")
+      .json({ email: "random@mail.com" });
+
+    response.assertStatus(404);
+    assert.isFalse(mailer.exists((mail) => {
+      return mail.subject === "Reset password"
+    }));
+
+    Mail.restore();
+  });
 })
