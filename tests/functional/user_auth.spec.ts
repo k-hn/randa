@@ -1,7 +1,9 @@
 import Mail from '@ioc:Adonis/Addons/Mail';
 import Database from '@ioc:Adonis/Lucid/Database';
 import { test } from '@japa/runner'
+import User from 'App/Models/User';
 import UserFactory from 'Database/factories/UserFactory';
+import { v4 as uuidv4 } from "uuid";
 
 test.group('User auth: login', (group) => {
   group.each.setup(async () => {
@@ -164,5 +166,51 @@ test.group('User auth: resend forgot password', (group) => {
     }));
 
     Mail.restore();
+  });
+})
+
+test.group("User auth: Reset password", (group) => {
+  group.each.setup(async () => {
+    await Database.beginGlobalTransaction();
+    return () => Database.rollbackGlobalTransaction();
+  });
+
+  test("password reset succeeds for valid token", async ({ assert, client }) => {
+    const user = await UserFactory
+      .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+      .with("passwordResetToken")
+      .create();
+    const resetToken = await user.related("passwordResetToken").query().firstOrFail();
+    const payload = {
+      password: "newPassword",
+      password_confirmation: "newPassword"
+    }
+
+    const response = await client
+      .post(`/api/v1/reset-password/${resetToken.token}`)
+      .json(payload);
+
+    const updatedUser = await User.findOrFail(user.id);
+
+    response.assertStatus(204);
+    assert.notEqual(user.password, updatedUser.password);
+  });
+
+  test("password reset fails for invalid token", async ({ client }) => {
+    await UserFactory
+      .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+      .with("passwordResetToken")
+      .create();
+    const invalidToken = uuidv4();
+    const payload = {
+      password: "newPassword",
+      password_confirmation: "newPassword"
+    }
+
+    const response = await client
+      .post(`/api/v1/${invalidToken}`)
+      .json(payload);
+
+    response.assertStatus(404);
   });
 })
