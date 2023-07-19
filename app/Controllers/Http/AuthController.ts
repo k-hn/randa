@@ -41,4 +41,14 @@ export default class AuthController {
 
         response.noContent();
     }
+
+    public async resendForgotPassword({ request, response }: HttpContextContract) {
+        const { email } = await request.validate(ForgotPasswordValidator);
+        const user = await User.findByOrFail("email", email);
+
+        // Resend password reset mail
+        await new ForgotPassword(user).sendLater();
+
+        response.noContent();
+    }
 }
