@@ -1,6 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import ForgotPassword from 'App/Mailers/ForgotPassword';
-import PasswordResetToken from 'App/Models/PasswordResetToken';
 import User from 'App/Models/User';
 import ForgotPasswordValidator from 'App/Validators/ForgotPasswordValidator';
 import LoginValidator from 'App/Validators/LoginValidator'
