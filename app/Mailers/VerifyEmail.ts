@@ -38,7 +38,7 @@ export default class VerifyEmail extends BaseMailer {
     message
       .from("no-reply@randa.com", "Randa")
       .to(this.user.email)
-      .subject("Welcome to Randa!")
-      .htmlView("emails/welcome", { userDetails: userEmailDetails })
+      .subject("Verify your email with us")
+      .htmlView("emails/verify_email", { userDetails: userEmailDetails })
   }
 }
