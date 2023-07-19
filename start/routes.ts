@@ -26,5 +26,6 @@ Route.group(() => {
   Route.group(() => {
     // Test route
     Route.post("/register", "RegisterController.index").as("register")
+    Route.get("/verify/:token", "RegisterController.verify").as("verify")
   }).prefix("/v1").as("v1");
 }).prefix("/api").as("api");
