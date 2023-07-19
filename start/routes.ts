@@ -25,7 +25,8 @@ Route.group(() => {
   // v1 routes
   Route.group(() => {
     // Test route
-    Route.post("/register", "RegisterController.index").as("register")
-    Route.get("/verify/:token", "RegisterController.verify").as("verify")
+    Route.post("/register", "RegisterController.index").as("register");
+    Route.get("/verify/:token", "RegisterController.verify").as("verify");
+    Route.post("/resend-verification", "RegisterController.resendVerification").as("resendVerification");
   }).prefix("/v1").as("v1");
 }).prefix("/api").as("api");

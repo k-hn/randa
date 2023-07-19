@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import VerifyEmail from 'App/Mailers/VerifyEmail';
 import EmailVerificationToken from 'App/Models/EmailVerificationToken';
 import { DateTime } from 'luxon';
+import ResendVerificationValidator from 'App/Validators/ResendVerificationValidator';
 
 
 export default class RegisterController {
@@ -42,6 +43,15 @@ export default class RegisterController {
             isVerified: true,
             verifiedAt: DateTime.now()
         }).save();
+
+        response.noContent();
+    }
+
+    public async resendVerification({ request, response }: HttpContextContract) {
+        const { email } = await request.validate(ResendVerificationValidator);
+        const user = await User.findByOrFail("email", email);
+
+        await new VerifyEmail(user).sendLater();
 
         response.noContent();
     }
