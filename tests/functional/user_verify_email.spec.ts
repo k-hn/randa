@@ -28,4 +28,32 @@ test.group('User Email Verification', (group) => {
 
     response.assertStatus(404);
   });
+});
+
+test.group("Resend User Email Verification", (group) => {
+  group.each.setup(async () => {
+    await Database.beginGlobalTransaction();
+    return () => Database.rollbackGlobalTransaction();
+  });
+
+  test("resend email verification works for existing user", async ({ client }) => {
+    const user = await UserFactory.with("emailVerificationToken").create();
+
+    const response = await client
+      .post("/api/v1/resend-verification")
+      .json({ email: user.email })
+
+    response.assertStatus(204);
+  });
+
+  test("resend verification email fails for non-existent user", async ({ client }) => {
+    await UserFactory.with("emailVerificationToken").create();
+    const email = "randomPerson@mail.com";
+
+    const response = await client
+      .post("/api/v1/resend-verification")
+      .json({ email });
+
+    response.assertStatus(404);
+  })
 })
