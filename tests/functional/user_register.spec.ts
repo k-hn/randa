@@ -2,7 +2,7 @@ import { test } from '@japa/runner';
 import Database from "@ioc:Adonis/Lucid/Database";
 import Mail from '@ioc:Adonis/Addons/Mail';
 
-test.group('Registration', (group) => {
+test.group('User Register: registration', (group) => {
   group.each.setup(async () => {
     await Database.beginGlobalTransaction()
     return () => Database.rollbackGlobalTransaction();

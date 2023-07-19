@@ -3,7 +3,7 @@ import { test } from '@japa/runner'
 import UserFactory from 'Database/factories/UserFactory';
 import { v4 as uuidv4 } from "uuid";
 
-test.group('User Email Verification', (group) => {
+test.group('User verify email: email verification', (group) => {
   group.each.setup(async () => {
     await Database.beginGlobalTransaction()
     return () => Database.rollbackGlobalTransaction();
@@ -30,7 +30,7 @@ test.group('User Email Verification', (group) => {
   });
 });
 
-test.group("Resend User Email Verification", (group) => {
+test.group("User verify email: Resend verification email", (group) => {
   group.each.setup(async () => {
     await Database.beginGlobalTransaction();
     return () => Database.rollbackGlobalTransaction();
