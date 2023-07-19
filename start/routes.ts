@@ -24,9 +24,12 @@ import Route from '@ioc:Adonis/Core/Route'
 Route.group(() => {
   // v1 routes
   Route.group(() => {
-    // Test route
+    // User registration routes
     Route.post("/register", "RegisterController.index").as("register");
     Route.get("/verify/:token", "RegisterController.verify").as("verify");
     Route.post("/resend-verification", "RegisterController.resendVerification").as("resendVerification");
+
+    // User login routes
+    Route.post("/login", "LoginController.index").as("login");
   }).prefix("/v1").as("v1");
 }).prefix("/api").as("api");
