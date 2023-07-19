@@ -46,7 +46,8 @@ export default class RegisterValidator {
     ]),
     password: schema.string([
       rules.confirmed(),
-      rules.minLength(10)
+      rules.minLength(10),
+      rules.maxLength(180),
     ])
   })
 
