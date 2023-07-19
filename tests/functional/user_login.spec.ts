@@ -2,7 +2,7 @@ import Database from '@ioc:Adonis/Lucid/Database';
 import { test } from '@japa/runner'
 import UserFactory from 'Database/factories/UserFactory';
 
-test.group('User login: login', (group) => {
+test.group('User auth: login', (group) => {
   group.each.setup(async () => {
     await Database.beginGlobalTransaction();
     return () => Database.rollbackGlobalTransaction();
@@ -41,5 +41,33 @@ test.group('User login: login', (group) => {
 
     response.assertStatus(400)
 
+  })
+})
+
+
+test.group('User auth: logout', (group) => {
+  group.each.setup(async () => {
+    await Database.beginGlobalTransaction();
+    return () => Database.rollbackGlobalTransaction();
+  });
+
+  test("logout for logged in users with bearer tokens works", async ({ client }) => {
+    const user = await UserFactory
+      .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+      .create();
+
+    const response = await client
+      .get("/api/v1/logout")
+      .loginAs(user)
+
+    console.log(response.body());
+    response.assertStatus(204);
+  });
+
+  test("logout for non-logged in users with bearer tokens works", async ({ client }) => {
+    const response = await client
+      .get("/api/v1/logout")
+
+    response.assertStatus(204);
   })
 })
