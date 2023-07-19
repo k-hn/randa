@@ -34,5 +34,6 @@ Route.group(() => {
     Route.get("/logout", "AuthController.logout").as("logout")
     Route.post("/forgot-password", "AuthController.forgotPassword").as("forgotPassword");
     Route.post("/resend-forgot-password", "AuthController.resendForgotPassword").as("resendForgotPassword");
+    Route.post("/reset-password/:token", "AuthController.resetPassword").as("resetPassword");
   }).prefix("/v1").as("v1");
 }).prefix("/api").as("api");

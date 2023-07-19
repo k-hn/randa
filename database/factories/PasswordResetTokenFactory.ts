@@ -7,4 +7,8 @@ export default Factory.define(PasswordResetToken, ({ faker }) => {
     token: faker.string.uuid(),
     expiresAt: DateTime.now().plus({ minutes: 15 })
   }
-}).build()
+}).state("expired", (resetToken) => {
+  resetToken.createdAt = DateTime.now().minus({ minutes: 16 })
+  resetToken.expiresAt = DateTime.now().minus({ minutes: 1 })
+})
+  .build()
