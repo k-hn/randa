@@ -1,8 +1,8 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import LoginValidator from 'App/Validators/LoginValidator'
 
-export default class LoginController {
-    public async index({ auth, request, response }: HttpContextContract) {
+export default class AuthController {
+    public async login({ auth, request, response }: HttpContextContract) {
         const { email, password } = await request.validate(LoginValidator);
 
         const token = await auth.use("api")

@@ -30,7 +30,7 @@ Route.group(() => {
     Route.post("/resend-verification", "RegisterController.resendVerification").as("resendVerification");
 
     // User auth routes
-    Route.post("/login", "LoginController.index").as("login");
-    Route.get("/logout", "LoginController.logout").as("logout")
+    Route.post("/login", "AuthController.login").as("login");
+    Route.get("/logout", "AuthController.logout").as("logout")
   }).prefix("/v1").as("v1");
 }).prefix("/api").as("api");
