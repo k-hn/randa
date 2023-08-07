@@ -2,7 +2,7 @@ import { BaseMailer, MessageContract } from '@ioc:Adonis/Addons/Mail'
 import User from 'App/Models/User';
 import Env from "@ioc:Adonis/Core/Env"
 
-export default class VerifyEmail extends BaseMailer {
+export default class ForgotPassword extends BaseMailer {
   /**
    * WANT TO USE A DIFFERENT MAILER?
    *
@@ -14,7 +14,7 @@ export default class VerifyEmail extends BaseMailer {
 
   /**
    * The prepare method is invoked automatically when you run
-   * "VerifyEmail.send".
+   * "ForgotPassword.send".
    *
    * Use this method to prepare the email message. The method can
    * also be async.
@@ -24,21 +24,21 @@ export default class VerifyEmail extends BaseMailer {
   }
 
   public async prepare(message: MessageContract) {
-    const verificationToken = await this.user
-      .related("emailVerificationToken")
+    const resetToken = await this.user
+      .related("passwordResetToken")
       .query()
       .firstOrFail();
 
     const frontendUrl = Env.get("FE_URL");
     const userEmailDetails = {
       firstName: this.user.firstName,
-      url: `${frontendUrl}/verify/${verificationToken.token}`
+      url: `${frontendUrl}/reset-password/${resetToken}`
     }
 
     message
       .from("no-reply@randa.com", "Randa")
       .to(this.user.email)
-      .subject("Verify your email with us")
-      .htmlView("emails/verify_email", { userDetails: userEmailDetails })
+      .subject("Reset password")
+      .htmlView("emails/forgot_password", { userDetails: userEmailDetails });
   }
 }

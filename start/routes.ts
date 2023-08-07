@@ -24,7 +24,25 @@ import Route from '@ioc:Adonis/Core/Route'
 Route.group(() => {
   // v1 routes
   Route.group(() => {
-    // Test route
-    Route.post("/register", "RegisterController.index").as("register")
+    // User registration routes
+    Route.post("/register", "RegisterController.index").as("register");
+    Route.get("/verify/:token", "RegisterController.verify").as("verify");
+    Route.post("/resend-verification", "RegisterController.resendVerification").as("resendVerification");
+
+    // User auth routes
+    Route.post("/login", "AuthController.login").as("login");
+    Route.get("/logout", "AuthController.logout").as("logout")
+    Route.post("/forgot-password", "AuthController.forgotPassword").as("forgotPassword");
+    Route.post("/resend-forgot-password", "AuthController.resendForgotPassword").as("resendForgotPassword");
+    Route.post("/reset-password/:token", "AuthController.resetPassword").as("resetPassword");
+
+    // Auth routes
+    Route.group(() => {
+      // User settings routes
+      Route.get("/user", "UserController.show").as("showUser")
+      Route.put("/user", "UserController.update").as("updateUser")
+      Route.delete("/user", "UserController.destroy").as("deleteUser")
+    }).middleware("auth");
+
   }).prefix("/v1").as("v1");
 }).prefix("/api").as("api");
