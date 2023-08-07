@@ -20,6 +20,15 @@ export default class User extends BaseModel {
   @column({ serializeAs: null })
   public password: string;
 
+  @column()
+  public isMentor: boolean
+
+  @column()
+  public technologyTags: object
+
+  @column()
+  public industryTags: object
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 

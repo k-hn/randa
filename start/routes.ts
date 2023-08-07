@@ -35,5 +35,14 @@ Route.group(() => {
     Route.post("/forgot-password", "AuthController.forgotPassword").as("forgotPassword");
     Route.post("/resend-forgot-password", "AuthController.resendForgotPassword").as("resendForgotPassword");
     Route.post("/reset-password/:token", "AuthController.resetPassword").as("resetPassword");
+
+    // Auth routes
+    Route.group(() => {
+      // User settings routes
+      Route.get("/user", "UserController.show").as("showUser")
+      Route.put("/user", "UserController.update").as("updateUser")
+      Route.delete("/user", "UserController.destroy").as("deleteUser")
+    }).middleware("auth");
+
   }).prefix("/v1").as("v1");
 }).prefix("/api").as("api");
