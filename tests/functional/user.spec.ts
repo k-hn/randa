@@ -8,9 +8,8 @@ test.group("User Settings: show", (group) => {
         return () => Database.rollbackGlobalTransaction();
     });
 
-    test("show existing user account details", async ({ client }) => {
+    test("show logged-in user account details passes", async ({ client }) => {
         const user = await UserFactory
-            .merge({ firstName: "Johnson" })
             .with("emailVerificationToken", 1, (token) => token.apply("verified"))
             .create();
 
@@ -19,9 +18,20 @@ test.group("User Settings: show", (group) => {
             .loginAs(user);
 
         response.assertStatus(200);
-    })
+    });
 
-    test("updating existing user account details passes", async ({ client }) => {
+    test("show non logged-in user account details fails", async ({ client }) => {
+        await UserFactory
+            .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+            .create();
+
+        const response = await client
+            .get("/api/v1/user")
+
+        response.assertStatus(401);
+    });
+
+    test("updating logged-in user account details passes", async ({ client }) => {
         const user = await UserFactory
             .merge({ firstName: "Johnson" })
             .with("emailVerificationToken", 1, (token) => token.apply("verified"))
@@ -33,7 +43,7 @@ test.group("User Settings: show", (group) => {
         };
 
         const response = await client
-            .put(`/api/v1/user`)
+            .put("/api/v1/user")
             .json(payload)
             .loginAs(user);
 
@@ -42,6 +52,24 @@ test.group("User Settings: show", (group) => {
             first_name: "Augustine",
             is_mentor: true
         });
+    });
+
+    test("updating non logged-in user account details fails", async ({ client }) => {
+        await UserFactory
+            .merge({ firstName: "Johnson" })
+            .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+            .create();
+
+        const payload = {
+            firstName: "Augustine",
+            isMentor: true
+        };
+
+        const response = await client
+            .put("/api/v1/user")
+            .json(payload)
+
+        response.assertStatus(401);
     })
 
     test("delete user account passses", async ({ client }) => {
@@ -55,5 +83,19 @@ test.group("User Settings: show", (group) => {
             .loginAs(user);
 
         response.assertStatus(204);
-    })
+    });
+
+    test("delete non logged-in user account fails", async ({ client }) => {
+        await UserFactory
+            .merge({ firstName: "Johnson" })
+            .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+            .create();
+
+        const response = await client
+            .delete("/api/v1/user")
+
+        response.assertStatus(401);
+    });
+
+
 });
