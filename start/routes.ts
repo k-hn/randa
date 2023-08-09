@@ -25,7 +25,7 @@ Route.group(() => {
   // v1 routes
   Route.group(() => {
     // User registration routes
-    Route.post("/register", "RegisterController.index").as("register");
+    Route.post("/register", "RegisterController.create").as("register");
     Route.get("/verify/:token", "RegisterController.verify").as("verify");
     Route.post("/resend-verification", "RegisterController.resendVerification").as("resendVerification");
 
@@ -38,10 +38,16 @@ Route.group(() => {
 
     // Auth routes
     Route.group(() => {
-      // User settings routes
+      // User account details routes
       Route.get("/user", "UserController.show").as("showUser")
       Route.put("/user", "UserController.update").as("updateUser")
       Route.delete("/user", "UserController.destroy").as("deleteUser")
+      Route.get("/user/appointments", "UserController.getAppointments").as("getUserAppointments");
+
+      // Appointments routes
+      Route.post("/appointments", "AppointmentController.create").as("createAppointment");
+
+
     }).middleware("auth");
 
   }).prefix("/v1").as("v1");

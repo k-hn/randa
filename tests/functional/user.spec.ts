@@ -1,5 +1,6 @@
 import Database from "@ioc:Adonis/Lucid/Database";
 import { test } from "@japa/runner";
+import User from "App/Models/User";
 import UserFactory from "Database/factories/UserFactory";
 
 test.group("User Settings: show", (group) => {
@@ -39,7 +40,7 @@ test.group("User Settings: show", (group) => {
 
         const payload = {
             firstName: "Augustine",
-            isMentor: true
+            isMentor: true,
         };
 
         const response = await client
@@ -49,9 +50,11 @@ test.group("User Settings: show", (group) => {
 
         response.assertStatus(200);
         response.assertBodyContains({
-            first_name: "Augustine",
-            is_mentor: true
+            first_name: "Augustine"
         });
+
+        const updatedUser = await User.findOrFail(user.id)
+        updatedUser.related("mentor").query().firstOrFail();
     });
 
     test("updating non logged-in user account details fails", async ({ client }) => {
@@ -61,8 +64,7 @@ test.group("User Settings: show", (group) => {
             .create();
 
         const payload = {
-            firstName: "Augustine",
-            isMentor: true
+            firstName: "Augustine"
         };
 
         const response = await client

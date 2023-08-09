@@ -1,8 +1,10 @@
 import { DateTime } from 'luxon'
-import { BaseModel, HasOne, beforeSave, column, hasOne } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, HasMany, HasOne, beforeSave, column, hasMany, hasOne } from '@ioc:Adonis/Lucid/Orm'
 import Hash from "@ioc:Adonis/Core/Hash"
 import PasswordResetToken from './PasswordResetToken'
 import EmailVerificationToken from './EmailVerificationToken'
+import Mentor from './Mentor'
+import Appointment from './Appointment'
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -19,9 +21,6 @@ export default class User extends BaseModel {
 
   @column({ serializeAs: null })
   public password: string;
-
-  @column()
-  public isMentor: boolean
 
   @column()
   public technologyTags: object
@@ -49,4 +48,9 @@ export default class User extends BaseModel {
   @hasOne(() => PasswordResetToken)
   public passwordResetToken: HasOne<typeof PasswordResetToken>
 
+  @hasOne(() => Mentor)
+  public mentor: HasOne<typeof Mentor>
+
+  @hasMany(() => Appointment)
+  public appointments: HasMany<typeof Appointment>
 }
