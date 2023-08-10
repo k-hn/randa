@@ -1,9 +1,10 @@
 import Database from "@ioc:Adonis/Lucid/Database";
 import { test } from "@japa/runner";
 import User from "App/Models/User";
+import AppointmentFactory from "Database/factories/AppointmentFactory";
 import UserFactory from "Database/factories/UserFactory";
 
-test.group("User Settings: show", (group) => {
+test.group("User Account: show", (group) => {
     group.each.setup(async () => {
         await Database.beginGlobalTransaction();
         return () => Database.rollbackGlobalTransaction();
@@ -30,6 +31,14 @@ test.group("User Settings: show", (group) => {
             .get("/api/v1/user")
 
         response.assertStatus(401);
+    });
+});
+
+
+test.group("User Account: update", (group) => {
+    group.each.setup(async () => {
+        await Database.beginGlobalTransaction()
+        return () => Database.rollbackGlobalTransaction();
     });
 
     test("updating logged-in user account details passes", async ({ client }) => {
@@ -73,6 +82,14 @@ test.group("User Settings: show", (group) => {
 
         response.assertStatus(401);
     })
+})
+
+
+test.group("User Account: delete", (group) => {
+    group.each.setup(async () => {
+        await Database.beginGlobalTransaction()
+        return () => Database.rollbackGlobalTransaction();
+    });
 
     test("delete user account passses", async ({ client }) => {
         const user = await UserFactory
@@ -98,6 +115,78 @@ test.group("User Settings: show", (group) => {
 
         response.assertStatus(401);
     });
-
-
 });
+
+test.group("User Account Appointments: show", (group) => {
+    group.each.setup(async () => {
+        await Database.beginGlobalTransaction()
+        return () => Database.rollbackGlobalTransaction();
+    });
+
+    test("user retrieving their appointment passes", async ({ client }) => {
+        const appointments = await AppointmentFactory
+            .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .createMany(3);
+
+        const appointment = appointments[0];
+        await appointment.load("user")
+        const appointmentUser = appointment.user;
+
+        const response = await client
+            .get(`/api/v1/user/appointments/${appointment.id}`)
+            .loginAs(appointmentUser);
+
+        response.assertStatus(200);
+    });
+
+    test("user retrieving all their appointments passes", async ({ assert, client }) => {
+        const appointmentUser = await UserFactory
+            .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+            .create();
+
+        const numberOfAppointments = 15;
+        await AppointmentFactory
+            .merge({ userId: appointmentUser.id })
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .createMany(numberOfAppointments);
+
+        const response = await client
+            .get("/api/v1/user/appointments")
+            .loginAs(appointmentUser);
+
+        response.assertStatus(200);
+    });
+
+    test("user retrieving their appointment fails when not logged in", async ({ client }) => {
+        const appointments = await AppointmentFactory
+            .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .createMany(3);
+
+        const appointment = appointments[0];
+        await appointment.load("user")
+
+        const response = await client
+            .get(`/api/v1/user/appointments/${appointment.id}`)
+
+        response.assertStatus(401);
+    });
+
+    test("user retrieving all their appointments fails when not logged in", async ({ client }) => {
+        const appointmentUser = await UserFactory
+            .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+            .create();
+
+        await AppointmentFactory
+            .merge({ userId: appointmentUser.id })
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .createMany(3);
+
+        const response = await client
+            .get("/api/v1/user/appointments")
+
+        response.assertStatus(401);
+    });
+})
+

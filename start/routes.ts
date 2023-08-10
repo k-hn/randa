@@ -42,13 +42,13 @@ Route.group(() => {
       Route.get("/user", "UserController.show").as("showUser")
       Route.put("/user", "UserController.update").as("updateUser")
       Route.delete("/user", "UserController.destroy").as("deleteUser")
+
+      // User appointment routes
       Route.get("/user/appointments", "UserController.getAppointments").as("getUserAppointments");
-      Route.get("/user/appointment/:id", "UserController.getAppointment").as("getUserAppointment");
+      Route.get("/user/appointments/:id", "UserController.getAppointment").as("getUserAppointment");
 
       // Appointments routes
       Route.post("/appointments", "AppointmentController.create").as("createAppointment");
-      // Route.get("/appointments/:id", "Appointments")
-
 
     }).middleware("auth");
 
