@@ -3,7 +3,6 @@ import { test } from "@japa/runner";
 import User from "App/Models/User";
 import AppointmentFactory from "Database/factories/AppointmentFactory";
 import UserFactory from "Database/factories/UserFactory";
-import { DateTime } from "luxon";
 
 test.group("User Account: show", (group) => {
     group.each.setup(async () => {
@@ -141,7 +140,7 @@ test.group("User Account Appointments: show", (group) => {
         response.assertStatus(200);
     });
 
-    test("user retrieving all their appointments passes", async ({ assert, client }) => {
+    test("user retrieving all their appointments passes", async ({ client }) => {
         const appointmentUser = await UserFactory
             .with("emailVerificationToken", 1, (token) => token.apply("verified"))
             .create();
@@ -228,7 +227,7 @@ test.group("User Account Appointments: update", (group) => {
         assert.isTrue(updatedBody.end_at === oldEndAt.plus({ hours: 1 }).toString())
     });
 
-    test("updating user appointment by guest fails", async ({ assert, client }) => {
+    test("updating user appointment by guest fails", async ({ client }) => {
         const appointment = await AppointmentFactory
             .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
             .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
@@ -254,7 +253,7 @@ test.group("User Account Appointments: update", (group) => {
         response.assertStatus(401);
     });
 
-    test("updating user appointment by unauthorised user fails", async ({ assert, client }) => {
+    test("updating user appointment by unauthorised user fails", async ({ client }) => {
         const randomUser = await UserFactory
             .with("emailVerificationToken", 1, (token) => token.apply("verified"))
             .create();
@@ -284,5 +283,62 @@ test.group("User Account Appointments: update", (group) => {
 
         response.assertStatus(404);
     });
-})
+});
+
+
+test.group("User Account Appointments: delete", (group) => {
+    group.each.setup(async () => {
+        await Database.beginGlobalTransaction()
+        return () => Database.rollbackGlobalTransaction()
+    });
+
+    test("deleting user appointment by owner passes", async ({ client }) => {
+        const appointment = await AppointmentFactory
+            .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .create();
+
+        await appointment.load("user");
+        const appointmentUser = appointment.user;
+
+        const response = await client
+            .delete(`/api/v1/user/appointments/${appointment.id}`)
+            .loginAs(appointmentUser);
+
+        response.assertStatus(204);
+    });
+
+    test("deleting user appointment by guest fails", async ({ client }) => {
+        const appointment = await AppointmentFactory
+            .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .create();
+
+        await appointment.load("user");
+
+        const response = await client
+            .delete(`/api/v1/user/appointments/${appointment.id}`)
+
+        response.assertStatus(401);
+    });
+
+    test("deleting user appointment by non-owner fails", async ({ client }) => {
+        const otherUser = await UserFactory
+            .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+            .create();
+
+        const appointment = await AppointmentFactory
+            .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .create();
+
+        await appointment.load("user");
+
+        const response = await client
+            .delete(`/api/v1/user/appointments/${appointment.id}`)
+            .loginAs(otherUser);
+
+        response.assertStatus(404);
+    });
+});
 
