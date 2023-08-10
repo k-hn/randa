@@ -60,4 +60,16 @@ export default class UserController {
 
         return response.ok(updatedAppointment);
     }
+
+    public async deleteAppointment({ auth, request, response }: HttpContextContract) {
+        const user = auth.user!;
+        const appointmentID = request.param("id");
+
+        const isDeleted = await AppointmentService.deleteUserAppointment(user, appointmentID);
+        if (!isDeleted) {
+            return response.badRequest();
+        }
+
+        return response.noContent();
+    }
 }

@@ -64,4 +64,15 @@ export default class AppointmentService {
         const updatedAppointment = await appointment.merge(payload).save();
         return updatedAppointment;
     }
+
+    public static async deleteUserAppointment(user: User, id: number): Promise<boolean> {
+        const appointment = await user.related("appointments")
+            .query()
+            .where("id", id)
+            .firstOrFail()
+
+        await appointment.delete()
+
+        return appointment.$isDeleted;
+    }
 }
