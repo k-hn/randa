@@ -7,7 +7,6 @@ export default class AppointmentController {
         const user = auth.user;
         const payload = await request.validate(AppointmentValidator);
 
-        console.log(payload.startAt.toSQL())
         // check if there appointment overlaps with mentor's existing ones
         const mentor = await Mentor.findOrFail(payload.mentorId);
         const overlappingAppointments = await mentor.related("appointments").query()
@@ -22,7 +21,6 @@ export default class AppointmentController {
 
         const appointment = await user?.related("appointments").create(payload)
 
-        return response.created(appointment)
-        // return response.ok({})
+        return response.created(appointment);
     }
 }
