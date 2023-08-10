@@ -1,8 +1,9 @@
+import Appointment from "App/Models/Appointment";
 import Mentor from "App/Models/Mentor";
 import User from "App/Models/User";
 import { DateTime } from "luxon";
 
-type Appointment = {
+type AppointmentPayload = {
     mentorId: number,
     startAt: DateTime,
     endAt: DateTime
@@ -15,7 +16,7 @@ type AppointmentCreationContract = AppointmentCreationSuccess | AppointmentCreat
 
 
 export default class AppointmentService {
-    public static async createAppointment(user: User, payload: Appointment): Promise<AppointmentCreationContract> {
+    public static async createAppointment(user: User, payload: AppointmentPayload): Promise<AppointmentCreationContract> {
         const mentor = await Mentor.findOrFail(payload.mentorId);
         const conflictingAppointments = await this.getConflictingMentorAppointments(mentor, payload.startAt, payload.endAt);
 
@@ -33,6 +34,19 @@ export default class AppointmentService {
             .orWhereBetween("endAt", [startAt.toString(), endAt.toString()])
 
         return conflictingAppointments;
+    }
 
+    public static async getUserAppointment(user: User, id: number): Promise<Appointment> {
+        const appointment = await user.related("appointments")
+            .query()
+            .where("id", id)
+            .firstOrFail();
+
+        return appointment;
+    }
+
+    public static async getUserAppointments(user: User): Promise<Appointment[]> {
+        const appointments = await user.related("appointments").query().paginate(1);
+        return appointments;
     }
 }

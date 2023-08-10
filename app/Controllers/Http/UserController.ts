@@ -1,5 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database';
+import AppointmentService from 'App/Services/AppointmentService';
 import UserValidator from 'App/Validators/UserValidator';
 
 export default class UserController {
@@ -33,5 +34,21 @@ export default class UserController {
 
         await user?.delete();
         response.noContent();
+    }
+
+    public async getAppointments({ auth, response }: HttpContextContract) {
+        const user = auth.user!;
+
+        const appointments = await AppointmentService.getUserAppointments(user);
+        return response.ok(appointments);
+    }
+
+    public async getAppointment({ auth, request, response }: HttpContextContract) {
+        const user = auth.user!;
+        const appointmentID = request.param("id");
+        const appointment = await AppointmentService.getUserAppointment(user, appointmentID);
+
+        return response.ok(appointment)
+
     }
 }

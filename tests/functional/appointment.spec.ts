@@ -4,7 +4,7 @@ import AppointmentFactory from 'Database/factories/AppointmentFactory';
 import UserFactory from 'Database/factories/UserFactory';
 import { DateTime } from 'luxon';
 
-test.group('Appointments', (group) => {
+test.group('Appointments: create', (group) => {
   group.each.setup(async () => {
     await Database.beginGlobalTransaction();
     return () => Database.rollbackGlobalTransaction();
@@ -74,3 +74,30 @@ test.group('Appointments', (group) => {
     response.assertStatus(400);
   });
 })
+
+
+test.group('Appointments: show', (group) => {
+  group.each.setup(async () => {
+    await Database.beginGlobalTransaction();
+    return () => Database.rollbackGlobalTransaction();
+  });
+
+  test("user retrieving their appointment passes", async ({ client }) => {
+    const appointments = await AppointmentFactory
+      .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
+      .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+      .createMany(3);
+
+    const appointment = appointments[0];
+    await appointment.load("user")
+    const appointmentUser = appointment.user;
+
+    const response = await client
+      .get(`/api/v1/appointments/${appointment.id}`)
+      .loginAs(appointmentUser);
+
+    console.log(response.body())
+    response.assertStatus(200);
+
+  })
+});
