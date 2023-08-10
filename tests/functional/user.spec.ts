@@ -3,6 +3,7 @@ import { test } from "@japa/runner";
 import User from "App/Models/User";
 import AppointmentFactory from "Database/factories/AppointmentFactory";
 import UserFactory from "Database/factories/UserFactory";
+import { DateTime } from "luxon";
 
 test.group("User Account: show", (group) => {
     group.each.setup(async () => {
@@ -187,6 +188,101 @@ test.group("User Account Appointments: show", (group) => {
             .get("/api/v1/user/appointments")
 
         response.assertStatus(401);
+    });
+});
+
+
+test.group("User Account Appointments: update", (group) => {
+    group.each.setup(async () => {
+        await Database.beginGlobalTransaction()
+        return () => Database.rollbackGlobalTransaction();
+    });
+
+    test("updating user appointment passes", async ({ assert, client }) => {
+        const appointment = await AppointmentFactory
+            .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .create();
+
+        await appointment.load((loader) => {
+            loader.load("user").load("mentor")
+        });
+        const appointmentUser = appointment.user;
+        const appointmentMentor = appointment.mentor;
+
+        const oldEndAt = appointment.endAt;
+        const payload = {
+            mentorId: appointmentMentor.id,
+            startAt: appointment.startAt,
+            endAt: oldEndAt.plus({ hours: 1 })
+        };
+
+        const response = await client
+            .put(`/api/v1/user/appointments/${appointment.id}`)
+            .json(payload)
+            .loginAs(appointmentUser);
+
+        response.assertStatus(200);
+
+        const updatedBody = response.body();
+        assert.isTrue(updatedBody.end_at === oldEndAt.plus({ hours: 1 }).toString())
+    });
+
+    test("updating user appointment by guest fails", async ({ assert, client }) => {
+        const appointment = await AppointmentFactory
+            .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .create();
+
+        await appointment.load((loader) => {
+            loader.load("user").load("mentor")
+        });
+
+        const appointmentMentor = appointment.mentor;
+
+        const oldEndAt = appointment.endAt;
+        const payload = {
+            mentorId: appointmentMentor.id,
+            startAt: appointment.startAt,
+            endAt: oldEndAt.plus({ hours: 1 })
+        };
+
+        const response = await client
+            .put(`/api/v1/user/appointments/${appointment.id}`)
+            .json(payload)
+
+        response.assertStatus(401);
+    });
+
+    test("updating user appointment by unauthorised user fails", async ({ assert, client }) => {
+        const randomUser = await UserFactory
+            .with("emailVerificationToken", 1, (token) => token.apply("verified"))
+            .create();
+
+        const appointment = await AppointmentFactory
+            .with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified")))
+            .with("mentor", 1, (mentor) => mentor.with("user", 1, (user) => user.with("emailVerificationToken", 1, (token) => token.apply("verified"))))
+            .create();
+
+        await appointment.load((loader) => {
+            loader.load("user").load("mentor")
+        });
+
+        const appointmentMentor = appointment.mentor;
+
+        const oldEndAt = appointment.endAt;
+        const payload = {
+            mentorId: appointmentMentor.id,
+            startAt: appointment.startAt,
+            endAt: oldEndAt.plus({ hours: 1 })
+        };
+
+        const response = await client
+            .put(`/api/v1/user/appointments/${appointment.id}`)
+            .json(payload)
+            .loginAs(randomUser);
+
+        response.assertStatus(404);
     });
 })
 
