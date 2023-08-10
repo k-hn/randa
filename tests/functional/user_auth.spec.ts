@@ -63,7 +63,6 @@ test.group('User auth: logout', (group) => {
       .get("/api/v1/logout")
       .loginAs(user)
 
-    console.log(response.body());
     response.assertStatus(204);
   });
 
@@ -141,7 +140,6 @@ test.group('User auth: resend forgot password', (group) => {
       .post("/api/v1/resend-forgot-password")
       .json(payload);
 
-    console.log(response.body())
     response.assertStatus(204);
     assert.isTrue(mailer.exists((mail) => {
       return mail.subject === "Reset password"

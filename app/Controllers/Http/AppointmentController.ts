@@ -1,26 +1,18 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import Mentor from 'App/Models/Mentor';
+import AppointmentService from 'App/Services/AppointmentService';
 import AppointmentValidator from 'App/Validators/AppointmentValidator';
 
 export default class AppointmentController {
     public async create({ auth, request, response }: HttpContextContract) {
-        const user = auth.user;
+        const user = auth.user!;
         const payload = await request.validate(AppointmentValidator);
 
-        // check if there appointment overlaps with mentor's existing ones
-        const mentor = await Mentor.findOrFail(payload.mentorId);
-        const overlappingAppointments = await mentor.related("appointments").query()
-            .whereBetween("startAt", [payload.startAt.toString(), payload.endAt.toString()])
-            .orWhereBetween("endAt", [payload.startAt.toString(), payload.endAt.toString()])
-
-        if (overlappingAppointments.length > 0) {
-            return response.badRequest({
-                overlappingAppointments
-            });
+        // Create appointment or fail
+        const [isSuccess, result] = await AppointmentService.createAppointment(user, payload);
+        if (isSuccess) {
+            return response.created(result);
+        } else {
+            return response.badRequest({ conflictingAppointment: result })
         }
-
-        const appointment = await user?.related("appointments").create(payload)
-
-        return response.created(appointment);
     }
 }
