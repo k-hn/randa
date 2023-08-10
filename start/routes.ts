@@ -46,6 +46,7 @@ Route.group(() => {
       // User appointment routes
       Route.get("/user/appointments", "UserController.getAppointments").as("getUserAppointments");
       Route.get("/user/appointments/:id", "UserController.getAppointment").as("getUserAppointment");
+      Route.put("/user/appointments/:id", "UserController.updateAppointment").as("updateUserAppointment");
 
       // Appointments routes
       Route.post("/appointments", "AppointmentController.create").as("createAppointment");

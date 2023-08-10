@@ -13,8 +13,10 @@ type AppointmentCreationSuccess = [boolean, Appointment]
 type AppointmentCreationFailure = [boolean, Appointment[]]
 type AppointmentCreationContract = AppointmentCreationSuccess | AppointmentCreationFailure;
 
-
-
+type AppointmentUpdatePayload = {
+    startAt: DateTime,
+    endAt: DateTime
+}
 export default class AppointmentService {
     public static async createAppointment(user: User, payload: AppointmentPayload): Promise<AppointmentCreationContract> {
         const mentor = await Mentor.findOrFail(payload.mentorId);
@@ -48,5 +50,18 @@ export default class AppointmentService {
     public static async getUserAppointments(user: User): Promise<Appointment[]> {
         const appointments = await user.related("appointments").query().paginate(1);
         return appointments;
+    }
+
+    public static async updateUserAppointment(
+        user: User,
+        id: number, payload: AppointmentUpdatePayload
+    ): Promise<Appointment> {
+        const appointment = await user.related("appointments")
+            .query()
+            .where("id", id)
+            .firstOrFail();
+
+        const updatedAppointment = await appointment.merge(payload).save();
+        return updatedAppointment;
     }
 }
