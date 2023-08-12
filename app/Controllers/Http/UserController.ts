@@ -1,7 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database';
 import AppointmentService from 'App/Services/AppointmentService';
-import AppointmentValidator from 'App/Validators/AppointmentValidator';
+import UpdateAppointmentValidator from 'App/Validators/UpdateAppointmentValidator';
 import UserValidator from 'App/Validators/UserValidator';
 
 export default class UserController {
@@ -55,7 +55,7 @@ export default class UserController {
     public async updateAppointment({ auth, request, response }: HttpContextContract) {
         const user = auth.user!;
         const appointmentID = request.param("id");
-        const updatePayload = await request.validate(AppointmentValidator);
+        const updatePayload = await request.validate(UpdateAppointmentValidator);
         const updatedAppointment = await AppointmentService.updateUserAppointment(user, appointmentID, updatePayload);
 
         return response.ok(updatedAppointment);

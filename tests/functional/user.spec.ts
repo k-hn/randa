@@ -211,7 +211,6 @@ test.group("User Account Appointments: update", (group) => {
 
         const oldEndAt = appointment.endAt;
         const payload = {
-            mentorId: appointmentMentor.id,
             startAt: appointment.startAt,
             endAt: oldEndAt.plus({ hours: 1 })
         };
@@ -237,11 +236,8 @@ test.group("User Account Appointments: update", (group) => {
             loader.load("user").load("mentor")
         });
 
-        const appointmentMentor = appointment.mentor;
-
         const oldEndAt = appointment.endAt;
         const payload = {
-            mentorId: appointmentMentor.id,
             startAt: appointment.startAt,
             endAt: oldEndAt.plus({ hours: 1 })
         };
@@ -271,7 +267,6 @@ test.group("User Account Appointments: update", (group) => {
 
         const oldEndAt = appointment.endAt;
         const payload = {
-            mentorId: appointmentMentor.id,
             startAt: appointment.startAt,
             endAt: oldEndAt.plus({ hours: 1 })
         };

@@ -1,12 +1,10 @@
-import Database from "@ioc:Adonis/Lucid/Database";
 import Mentor from "App/Models/Mentor";
 
 
 export default class MentorService {
 
     public static async getAllMentors(page: number, limit: number) {
-        const mentors = await Database.from("mentors").paginate(page, limit);
-
+        const mentors = await Mentor.query().paginate(page, limit);
         return mentors;
     }
 

@@ -1,3 +1,4 @@
+import { ModelPaginatorContract } from "@ioc:Adonis/Lucid/Orm";
 import Appointment from "App/Models/Appointment";
 import Mentor from "App/Models/Mentor";
 import User from "App/Models/User";
@@ -72,6 +73,50 @@ export default class AppointmentService {
             .firstOrFail()
 
         await appointment.delete()
+
+        return appointment.$isDeleted;
+    }
+
+    public static async getMentorAppointments(user: User, page: number, limit: number): Promise<ModelPaginatorContract<Appointment>> {
+        const mentor = await user.related("mentor").query().firstOrFail();
+        const appointments = await mentor.related("appointments").query().paginate(page, limit)
+
+        return appointments;
+    }
+
+    public static async getMentorAppointment(user: User, id: number): Promise<Appointment> {
+        const mentor = await user.related("mentor").query().firstOrFail();
+
+        const appointment = await mentor.related("appointments")
+            .query()
+            .where("id", id)
+            .firstOrFail();
+
+        return appointment;
+    }
+
+    public static async updateMentorAppointment(
+        user: User,
+        id: number, payload: AppointmentUpdatePayload
+    ): Promise<Appointment> {
+        const mentor = await user.related("mentor").query().firstOrFail();
+        const appointment = await mentor.related("appointments")
+            .query()
+            .where("id", id)
+            .firstOrFail();
+
+        const updatedAppointment = await appointment.merge(payload).save();
+        return updatedAppointment;
+    }
+
+    public static async deleteMentorAppointment(user: User, id: number): Promise<boolean> {
+        const mentor = await user.related("mentor").query().firstOrFail();
+        const appointment = await mentor.related("appointments")
+            .query()
+            .where("id", id)
+            .firstOrFail();
+
+        await appointment.delete();
 
         return appointment.$isDeleted;
     }

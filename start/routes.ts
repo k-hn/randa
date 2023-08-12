@@ -54,13 +54,13 @@ Route.group(() => {
 
       // Mentor routes index, show
       Route.get("/mentors", "MentorController.index").as("getAllMentors");
-      Route.get("/mentors/:id", "MentorController.show").as("getMentor");
+      Route.get("/mentors/:id", "MentorController.show").where("id", Route.matchers.number()).as("getMentor");
 
       // Mentor appointment routes
       Route.get("/mentors/appointments", "MentorController.getAppointments").as("getMentorAppointnments");
-      Route.get("/mentors/appointments/:id", "MentorController.getAppointment").as("getMentorAppointment");
-      Route.put("/mentors/appointments/:id", "MentorController.updateAppointment").as("updateMentorAppointment");
-      Route.delete("/mentors/appointments/:id", "MentorController.deleteAppointment").as("deleteMentorAppointment");
+      Route.get("/mentors/appointments/:id", "MentorController.getAppointment").where("id", Route.matchers.number()).as("getMentorAppointment");
+      Route.put("/mentors/appointments/:id", "MentorController.updateAppointment").where("id", Route.matchers.number()).as("updateMentorAppointment");
+      Route.delete("/mentors/appointments/:id", "MentorController.deleteAppointment").where("id", Route.matchers.number()).as("deleteMentorAppointment");
     }).middleware("auth");
 
   }).prefix("/v1").as("v1");
