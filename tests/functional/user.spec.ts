@@ -207,7 +207,6 @@ test.group("User Account Appointments: update", (group) => {
             loader.load("user").load("mentor")
         });
         const appointmentUser = appointment.user;
-        const appointmentMentor = appointment.mentor;
 
         const oldEndAt = appointment.endAt;
         const payload = {
@@ -262,8 +261,6 @@ test.group("User Account Appointments: update", (group) => {
         await appointment.load((loader) => {
             loader.load("user").load("mentor")
         });
-
-        const appointmentMentor = appointment.mentor;
 
         const oldEndAt = appointment.endAt;
         const payload = {
