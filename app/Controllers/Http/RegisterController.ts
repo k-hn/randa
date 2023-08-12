@@ -10,12 +10,19 @@ import ResendVerificationValidator from 'App/Validators/ResendVerificationValida
 
 
 export default class RegisterController {
-    public async index({ request, response }: HttpContextContract) {
+    public async create({ request, response }: HttpContextContract) {
         const payload = await request.validate(UserRegistrationValidator);
+        const isMentor = "isMentor" in payload ? payload.isMentor : false;
+        delete payload.isMentor;
 
         const user = await Database.transaction(async (trx) => {
             // Create user record
             const user = await User.create(payload, { client: trx })
+
+            // Create mentor record
+            if (isMentor) {
+                await user.related("mentor").create({}, { client: trx });
+            }
 
             // Create email verification token
             await user.related("emailVerificationToken").create({

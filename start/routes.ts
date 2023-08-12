@@ -25,7 +25,7 @@ Route.group(() => {
   // v1 routes
   Route.group(() => {
     // User registration routes
-    Route.post("/register", "RegisterController.index").as("register");
+    Route.post("/register", "RegisterController.create").as("register");
     Route.get("/verify/:token", "RegisterController.verify").as("verify");
     Route.post("/resend-verification", "RegisterController.resendVerification").as("resendVerification");
 
@@ -38,10 +38,29 @@ Route.group(() => {
 
     // Auth routes
     Route.group(() => {
-      // User settings routes
+      // User account details routes
       Route.get("/user", "UserController.show").as("showUser")
       Route.put("/user", "UserController.update").as("updateUser")
       Route.delete("/user", "UserController.destroy").as("deleteUser")
+
+      // User appointment routes
+      Route.get("/user/appointments", "UserController.getAppointments").as("getUserAppointments");
+      Route.get("/user/appointments/:id", "UserController.getAppointment").as("getUserAppointment");
+      Route.put("/user/appointments/:id", "UserController.updateAppointment").as("updateUserAppointment");
+      Route.delete("/user/appointments/:id", "UserController.deleteAppointment").as("deleteUserAppointment");
+
+      // Appointments routes
+      Route.post("/appointments", "AppointmentController.create").as("createAppointment");
+
+      // Mentor routes index, show
+      Route.get("/mentors", "MentorController.index").as("getAllMentors");
+      Route.get("/mentors/:id", "MentorController.show").where("id", Route.matchers.number()).as("getMentor");
+
+      // Mentor appointment routes
+      Route.get("/mentors/appointments", "MentorController.getAppointments").as("getMentorAppointnments");
+      Route.get("/mentors/appointments/:id", "MentorController.getAppointment").where("id", Route.matchers.number()).as("getMentorAppointment");
+      Route.put("/mentors/appointments/:id", "MentorController.updateAppointment").where("id", Route.matchers.number()).as("updateMentorAppointment");
+      Route.delete("/mentors/appointments/:id", "MentorController.deleteAppointment").where("id", Route.matchers.number()).as("deleteMentorAppointment");
     }).middleware("auth");
 
   }).prefix("/v1").as("v1");

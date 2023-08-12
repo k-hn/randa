@@ -1,5 +1,8 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import UserSettingsValidator from 'App/Validators/UserValidator';
+import Database from '@ioc:Adonis/Lucid/Database';
+import AppointmentService from 'App/Services/AppointmentService';
+import UpdateAppointmentValidator from 'App/Validators/UpdateAppointmentValidator';
+import UserValidator from 'App/Validators/UserValidator';
 
 export default class UserController {
     public async show({ auth, response }: HttpContextContract) {
@@ -10,8 +13,19 @@ export default class UserController {
 
     public async update({ auth, request }: HttpContextContract) {
         const user = auth.user;
-        const payload = await request.validate(UserSettingsValidator);
-        const updatedUser = user?.merge(payload)
+        const payload = await request.validate(UserValidator);
+        const isMentor = payload.isMentor ? payload.isMentor : false;
+        delete payload.isMentor;
+
+        const updatedUser = await Database.transaction(async (trx) => {
+            const updatedUser = user?.merge(payload);
+
+            if (isMentor) {
+                await updatedUser?.related("mentor").updateOrCreate({}, {}, { client: trx })
+            }
+
+            return updatedUser;
+        });
 
         return (updatedUser);
     }
@@ -23,5 +37,39 @@ export default class UserController {
         response.noContent();
     }
 
+    public async getAppointments({ auth, response }: HttpContextContract) {
+        const user = auth.user!;
 
+        const appointments = await AppointmentService.getUserAppointments(user);
+        return response.ok(appointments);
+    }
+
+    public async getAppointment({ auth, request, response }: HttpContextContract) {
+        const user = auth.user!;
+        const appointmentID = request.param("id");
+        const appointment = await AppointmentService.getUserAppointment(user, appointmentID);
+
+        return response.ok(appointment)
+    }
+
+    public async updateAppointment({ auth, request, response }: HttpContextContract) {
+        const user = auth.user!;
+        const appointmentID = request.param("id");
+        const updatePayload = await request.validate(UpdateAppointmentValidator);
+        const updatedAppointment = await AppointmentService.updateUserAppointment(user, appointmentID, updatePayload);
+
+        return response.ok(updatedAppointment);
+    }
+
+    public async deleteAppointment({ auth, request, response }: HttpContextContract) {
+        const user = auth.user!;
+        const appointmentID = request.param("id");
+
+        const isDeleted = await AppointmentService.deleteUserAppointment(user, appointmentID);
+        if (!isDeleted) {
+            return response.badRequest();
+        }
+
+        return response.noContent();
+    }
 }

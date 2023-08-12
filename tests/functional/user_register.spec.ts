@@ -1,6 +1,7 @@
 import { test } from '@japa/runner';
 import Database from "@ioc:Adonis/Lucid/Database";
 import Mail from '@ioc:Adonis/Addons/Mail';
+import User from 'App/Models/User';
 
 test.group('User Register: registration', (group) => {
   group.each.setup(async () => {
@@ -8,6 +9,32 @@ test.group('User Register: registration', (group) => {
     return () => Database.rollbackGlobalTransaction();
   });
 
+  test("registration as mentor passes for valid payload", async ({ assert, client }) => {
+    const mailer = Mail.fake();
+    const payload = {
+      firstName: "Kofi",
+      lastName: "Hagan",
+      email: "me@mail.com",
+      password: "somePassword",
+      password_confirmation: "somePassword",
+      isMentor: true
+    };
+
+    const response = await client
+      .post("/api/v1/register")
+      .json(payload)
+
+    response.assertStatus(201);
+    assert.isTrue(mailer.exists((mail) => {
+      return mail.subject === "Verify your email with us"
+    }));
+
+    Mail.restore();
+
+    // Check mentor record exists
+    const user = await User.findByOrFail("email", payload.email)
+    await user.related("mentor").query().firstOrFail();
+  })
   test("registration passes for valid payload, verification sent", async ({ assert, client }) => {
     const mailer = Mail.fake();
     const payload = {
